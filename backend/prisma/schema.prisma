@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and authorization
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  role      UserRole @default(VOTER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  votes Vote[]
+
+  @@map("users")
+}
+
+// Election model
+model Election {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  candidates Candidate[]
+  votes      Vote[]
+
+  @@map("elections")
+}
+
+// Candidate model
+model Candidate {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  imageUrl    String?
+  voteCount   Int      @default(0)
+  electionId  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  election Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  votes    Vote[]
+
+  @@map("candidates")
+}
+
+// Vote model
+model Vote {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  candidateId Int
+  electionId  Int
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  election  Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+
+  // Ensure one vote per user per election
+  @@unique([userId, electionId])
+  @@map("votes")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  VOTER
+  CANDIDATE
+}
