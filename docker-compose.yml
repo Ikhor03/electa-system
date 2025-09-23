@@ -17,6 +17,56 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - pemilu-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pemilu-backend
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://pemilu_user:pemilu_password@postgres:5432/pemilu
+      - JWT_SECRET=your-super-secure-jwt-secret-key-minimum-32-characters-long
+      - JWT_REFRESH_SECRET=your-super-secure-refresh-secret-key-minimum-32-characters-long
+      - PORT=3001
+      - FRONTEND_URL=http://localhost:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - pemilu-network
+    command: ["sh", "-c", "pnpm dev"]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pemilu-frontend
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - pemilu-network
+    command: ["pnpm", "dev"]
 
 volumes:
   postgres_data:
+
+networks:
+  pemilu-network:
+    driver: bridge

@@ -21,13 +21,13 @@ export class UserResponseDto {
   isActive: boolean;
 
   @ApiProperty({ required: false })
-  phone?: string;
+  phone?: string | null;
 
   @ApiProperty({ required: false })
-  profileImage?: string;
+  profileImage?: string | null;
 
   @ApiProperty({ required: false })
-  lastLogin?: Date;
+  lastLogin?: Date | null;
 }
 
 export class AuthResponseDto {
