@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ElectionsModule } from './elections/elections.module';
 import { CandidatesModule } from './candidates/candidates.module';
+import { VotingModule } from './voting/voting.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CandidatesModule } from './candidates/candidates.module';
     UsersModule,
     ElectionsModule,
     CandidatesModule,
+    VotingModule,
   ],
   controllers: [AppController],
   providers: [],
