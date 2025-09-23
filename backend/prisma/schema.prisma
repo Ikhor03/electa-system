@@ -12,46 +12,89 @@ datasource db {
 
 // User model for authentication and authorization
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password  String
-  role      UserRole @default(VOTER)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
+  username    String    @unique
+  name        String
+  password    String    // bcrypt hashed
+  role        UserRole  @default(VOTER)
+  isActive    Boolean   @default(true)
+  phone       String?
+  profileImage String?
+  lastLogin   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // Relations
-  votes Vote[]
+  votes         Vote[]
+  auditLogs     AuditLog[]
+  refreshTokens RefreshToken[]
 
   @@map("users")
+  @@index([email])
+  @@index([username])
+  @@index([role])
 }
 
-// Election model
+// Election model (replaces kategori table)
 model Election {
-  id          Int      @id @default(autoincrement())
-  title       String
+  id            Int             @id @default(autoincrement())
+  name          String
+  description   String?
+  accessUrl     String          @unique // For public access
+  imageUrl      String?
+  status        ElectionStatus  @default(DRAFT)
+  startDate     DateTime
+  endDate       DateTime
+  voterType     VoterType       // NIK, NPM, NISN
+  requiresAuth  Boolean         @default(true)
+  maxVotesPerUser Int           @default(1)
+  allowQuickCount Boolean       @default(false)
+  showResults   Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  // Relations
+  candidates        Candidate[]
+  votes            Vote[]
+  electoralDistricts ElectoralDistrict[]
+  voterRegistrations VoterRegistration[]
+
+  @@map("elections")
+  @@index([status])
+  @@index([startDate, endDate])
+  @@index([accessUrl])
+}
+
+// Electoral Districts (replaces dapil table)
+model ElectoralDistrict {
+  id          Int     @id @default(autoincrement())
+  name        String
   description String?
-  startDate   DateTime
-  endDate     DateTime
-  isActive    Boolean  @default(true)
+  isActive    Boolean @default(true)
+  electionId  Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
-  candidates Candidate[]
-  votes      Vote[]
+  election Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  voterRegistrations VoterRegistration[]
 
-  @@map("elections")
+  @@unique([name, electionId])
+  @@map("electoral_districts")
+  @@index([electionId])
 }
 
 // Candidate model
 model Candidate {
   id          Int      @id @default(autoincrement())
   name        String
-  description String?
+  candidateNumber String // no_urut from original
+  description String?  // visimisi from original
   imageUrl    String?
   voteCount   Int      @default(0)
+  isActive    Boolean  @default(true)
+  position    Int      @default(0) // Display order
   electionId  Int
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -60,30 +103,134 @@ model Candidate {
   election Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
   votes    Vote[]
 
+  @@unique([candidateNumber, electionId])
   @@map("candidates")
+  @@index([electionId])
+  @@index([isActive])
 }
 
-// Vote model
+// Voter Registration (separates voter data from votes for privacy)
+model VoterRegistration {
+  id                  Int      @id @default(autoincrement())
+  voterIdentifier     String   // NIK, NPM, NISN
+  name                String
+  gender              Gender
+  hasVoted            Boolean  @default(false)
+  voteTimestamp       DateTime?
+  isEligible          Boolean  @default(true)
+  electionId          Int
+  electoralDistrictId Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  election          Election           @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  electoralDistrict ElectoralDistrict? @relation(fields: [electoralDistrictId], references: [id])
+
+  @@unique([voterIdentifier, electionId])
+  @@map("voter_registrations")
+  @@index([electionId])
+  @@index([voterIdentifier])
+  @@index([hasVoted])
+}
+
+// Vote model (anonymous voting records)
 model Vote {
   id          Int      @id @default(autoincrement())
-  userId      Int
-  candidateId Int
+  voteHash    String   @unique // Anonymous identifier
+  candidateId Int?     // Null for invalid votes
   electionId  Int
+  isValid     Boolean  @default(true)
+  ipAddress   String?  // For audit purposes
+  userAgent   String?  // For audit purposes
   createdAt   DateTime @default(now())
 
   // Relations
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  election  Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  candidate Candidate? @relation(fields: [candidateId], references: [id], onDelete: SetNull)
+  election  Election   @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    Int?       // Optional for admin tracking
 
-  // Ensure one vote per user per election
-  @@unique([userId, electionId])
   @@map("votes")
+  @@index([electionId])
+  @@index([createdAt])
+  @@index([voteHash])
+}
+
+// System Configuration
+model Configuration {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String
+  description String?
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("configurations")
+  @@index([key])
+}
+
+// Audit Log for security and compliance
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  action    String
+  resource  String
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// Refresh Token for JWT authentication
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 // Enums
 enum UserRole {
+  SUPER_ADMIN
   ADMIN
+  OPERATOR
   VOTER
-  CANDIDATE
+}
+
+enum ElectionStatus {
+  DRAFT
+  PUBLISHED
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum VoterType {
+  NIK    // National ID (Nomor Induk Kependudukan)
+  NPM    // Student ID (Nomor Pokok Mahasiswa)
+  NISN   // School ID (Nomor Induk Siswa Nasional)
+  CUSTOM // Custom identifier
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
