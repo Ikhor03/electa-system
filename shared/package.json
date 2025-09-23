@@ -1,7 +1,7 @@
 {
-  "name": "@pemilu/shared",
+  "name": "@electa/shared",
   "version": "1.0.0",
-  "description": "Shared types and interfaces for Pemilu Election System",
+  "description": "Shared types and interfaces for Electa Election Management System by Nyce Up",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

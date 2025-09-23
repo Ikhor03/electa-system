@@ -1,8 +1,8 @@
 {
-  "name": "backend",
+  "name": "electa-backend",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Electa Backend API - NestJS Election Management System by Nyce Up",
+  "author": "Nyce Up",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

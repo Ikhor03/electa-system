@@ -1,4 +1,4 @@
-# 📚 Pemilu Migration Documentation Index
+# 📚 Electa Migration Documentation Index
 
 **Project**: PHP CodeIgniter → NestJS + Next.js Migration  
 **Status**: Phase 3 Completed, Phase 4 Ready  
@@ -16,7 +16,7 @@
 ```bash
 # Clone and start everything
 git clone <repository>
-cd pemilu-nextjs
+cd electa-system
 docker-compose up -d
 
 # Access points:

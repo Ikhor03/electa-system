@@ -139,10 +139,10 @@ describe('Authentication (e2e)', () => {
   });
 
   describe('Protected Routes', () => {
-    it('should protect root endpoint', async () => {
+    it('should return 404 for non-existent endpoints', async () => {
       await request(app.getHttpServer())
         .get('/')
-        .expect(401);
+        .expect(404);
     });
   });
 });

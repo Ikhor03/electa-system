@@ -1,6 +1,6 @@
-# 🗳️ Pemilu Election System
+# 🗳️ Electa by Nyce Up
 
-**A modern, secure election management system migrated from PHP CodeIgniter to NestJS + Next.js**
+**Professional Election Management System - Modern, secure, and scalable election platform built with NestJS + Next.js**
 
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](./docs/setup/DOCKER_SETUP.md)
 [![Tests](https://img.shields.io/badge/Tests-Passing-green)](./docs/architecture/TESTING_STRATEGY.md)
@@ -13,7 +13,7 @@
 ```bash
 # 1. Clone and start everything with Docker
 git clone <repository-url>
-cd pemilu-nextjs
+cd electa-system
 docker-compose up -d
 
 # 2. Access the application
@@ -70,7 +70,7 @@ Deploy:    Docker + pnpm workspaces
 
 ### **Project Structure**
 ```
-pemilu-nextjs/
+electa-system/
 ├── 📚 docs/                    # Organized documentation
 │   ├── phases/                 # Migration phase reports
 │   ├── setup/                  # Environment setup guides  
