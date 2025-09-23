@@ -5,6 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ElectionsModule } from './elections/elections.module';
+import { CandidatesModule } from './candidates/candidates.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ElectionsModule } from './elections/elections.module';
     AuthModule,
     UsersModule,
     ElectionsModule,
+    CandidatesModule,
   ],
   controllers: [AppController],
   providers: [],
