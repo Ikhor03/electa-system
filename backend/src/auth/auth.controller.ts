@@ -12,7 +12,8 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { AuthService } from './services/auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { AuthResponseDto, RefreshTokenDto, UserResponseDto } from './dto/auth-response.dto';
+import { AuthResponseDto, RefreshTokenDto } from './dto/auth-response.dto';
+import { UserResponseDto } from '../users/dto/user-response.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';

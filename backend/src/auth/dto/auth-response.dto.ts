@@ -1,34 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserRole } from '@prisma/client';
-
-export class UserResponseDto {
-  @ApiProperty()
-  id: number;
-
-  @ApiProperty()
-  email: string;
-
-  @ApiProperty()
-  username: string;
-
-  @ApiProperty()
-  name: string;
-
-  @ApiProperty({ enum: UserRole })
-  role: UserRole;
-
-  @ApiProperty()
-  isActive: boolean;
-
-  @ApiProperty({ required: false })
-  phone?: string | null;
-
-  @ApiProperty({ required: false })
-  profileImage?: string | null;
-
-  @ApiProperty({ required: false })
-  lastLogin?: Date | null;
-}
+import { UserResponseDto } from '../../users/dto/user-response.dto';
 
 export class AuthResponseDto {
   @ApiProperty({

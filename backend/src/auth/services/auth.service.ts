@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -6,7 +6,8 @@ import * as bcrypt from 'bcrypt';
 import { User, UserRole } from '@prisma/client';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
-import { AuthResponseDto, UserResponseDto } from '../dto/auth-response.dto';
+import { AuthResponseDto } from '../dto/auth-response.dto';
+import { UserResponseDto } from '../../users/dto/user-response.dto';
 import { JwtPayload, JwtRefreshPayload } from '../interfaces/jwt-payload.interface';
 
 @Injectable()
@@ -16,6 +17,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
+
+  private readonly logger = new Logger(AuthService.name);
 
   /**
    * Validate user credentials for local strategy
@@ -45,10 +48,12 @@ export class AuthService {
     const user = await this.validateUser(loginDto.username, loginDto.password);
     
     if (!user) {
+      this.logger.error('Invalid credentials');
       throw new UnauthorizedException('Invalid credentials');
     }
 
     if (!user.isActive) {
+      this.logger.error('Account is deactivated');
       throw new UnauthorizedException('Account is deactivated');
     }
 

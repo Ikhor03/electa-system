@@ -1,7 +1,11 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
+import { Public } from './auth/decorators/public.decorator';
 
 @Controller()
 export class AppController {
-  // This controller serves as the main app controller
-  // All specific functionality is handled by feature modules (auth, etc.)
+  @Get('health')
+  @Public()
+  getHealth() {
+    return { status: 'ok', message: 'Backend is healthy' };
+  }
 }
